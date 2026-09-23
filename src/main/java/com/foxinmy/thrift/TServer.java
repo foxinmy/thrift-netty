@@ -49,7 +49,7 @@ public class TServer {
         return bootstrap;
     }
 
-    public void start(boolean blocking) throws InterruptedException {
+    public void start() throws InterruptedException {
         bootstrap = newBootstrap().option(ChannelOption.SO_BACKLOG, 1024)
                 .childOption(ChannelOption.TCP_NODELAY, true)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
@@ -76,29 +76,27 @@ public class TServer {
             }
         });
         int port = conf.getPort();
-        ChannelFuture future = bootstrap.bind("0.0.0.0", port).addListener((ChannelFutureListener) f -> {
+        bootstrap.bind("0.0.0.0", port).addListener((ChannelFutureListener) f -> {
             if (f.isSuccess()) {
                 channel = f.channel();
                 log.info("RPC Server {} startup successfully", channel);
             } else {
                 throw new RuntimeException("RPC Server :" + port + " startup failed", f.cause());
             }
-        });
-        if (blocking) future.sync().channel().closeFuture().sync();
+        }).sync().channel().closeFuture().sync();
     }
 
-    public void stop(boolean blocking) {
-        ChannelFuture future = channel != null ? channel.close().addListener((ChannelFutureListener) f -> log.info("TServer channel shutdown: {}", f.channel())) : null;
-        if (blocking && future != null) future.syncUninterruptibly();
-
+    public void stop() {
+        if (channel != null)
+            channel.close().addListener((ChannelFutureListener) f -> log.info("TServer channel shutdown: {}", f.channel())).syncUninterruptibly();
         if (bootstrap != null) {
             ServerBootstrapConfig config = bootstrap.config();
             io.netty.util.concurrent.Future<?> shutdownFuture = config.group().shutdownGracefully()
                     .addListener(f -> log.info("TServer acceptor shutdown: {}", Objects.toString(f.cause(), "OK")));
-            if (blocking) shutdownFuture.syncUninterruptibly();
+            shutdownFuture.syncUninterruptibly();
             shutdownFuture = config.childGroup().shutdownGracefully()
                     .addListener(f -> log.info("TServer worker shutdown: {}", Objects.toString(f.cause(), "OK")));
-            if (blocking) shutdownFuture.syncUninterruptibly();
+            shutdownFuture.syncUninterruptibly();
         }
         if (executor != null) executor.shutdown();
     }
