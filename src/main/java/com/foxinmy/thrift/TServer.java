@@ -59,7 +59,7 @@ public class TServer {
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         final int maxFrameSize = conf.getMaxFrameSize();
         executor = new ThreadPoolExecutor(
-                conf.getThreads(), conf.getThreads() * 2,
+                conf.getHandleThreads(), conf.getHandleThreads() * 2,
                 60L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(10240),
                 new DefaultThreadFactory("exec"),
@@ -75,13 +75,13 @@ public class TServer {
                 pipeline.addLast(dispatcher);
             }
         });
-        int port = conf.getPort();
+        int port = conf.getBindPort();
         bootstrap.bind("0.0.0.0", port).addListener((ChannelFutureListener) f -> {
             if (f.isSuccess()) {
                 channel = f.channel();
-                log.info("RPC Server {} startup successfully", channel);
+                log.info("TServer {} startup successfully", channel);
             } else {
-                throw new RuntimeException("RPC Server :" + port + " startup failed", f.cause());
+                throw new RuntimeException("TServer :" + port + " startup failed", f.cause());
             }
         }).sync().channel().closeFuture().sync();
     }

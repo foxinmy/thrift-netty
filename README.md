@@ -21,7 +21,8 @@
 ServerConf conf = new ServerConf(
         9083,
         Runtime.getRuntime().availableProcessors(),
-        16 * 1024 * 1024
+        16 * 1024 * 1024,
+        600
 );
 
 MyService.Iface handler = new MyServiceHandler();
@@ -35,35 +36,17 @@ TServer server = new TServer(
         processor.getProcessMapView()
 );
 
-server.start(false);
+server.start();
 ```
 
 ##  配置
 
-| 参数             | 说明                 |
-|----------------|--------------------|
-| `port`         | 监听端口             |
-| `threads`      | 工作线程数            |
-| `maxFrameSize` | Thrift 最大 Frame 大小 |
+| 参数                | 说明                 |
+|-------------------|--------------------|
+| `bindPort`        | 监听端口             |
+| `handleThreads`   | 工作线程数            |
+| `maxFrameSize`    | Thrift 最大 Frame 大小 |
 | `readIdleTimeout` | 读空闲超时时间，单位：秒  |
-
-例如：
-
-```java
-ServerConf conf = new ServerConf(
-        9083,
-        Runtime.getRuntime().availableProcessors(),
-        16 * 1024 * 1024,
-        300
-);
-```
-
-表示：
-
-* 监听 `9083` 端口
-* Worker 线程数使用 CPU 核数
-* 最大 Thrift Frame 为 `16 MB`
-* 连续 `300` 秒空闲则主动断开连接
 
 ## License
 

@@ -21,7 +21,7 @@ public class EchoTest {
 
     @Test
     void server() throws Exception {
-        ServerConf conf = new ServerConf(PORT, Runtime.getRuntime().availableProcessors(), 16 * 1024 * 1024, 300);
+        ServerConf conf = new ServerConf(PORT);
         EchoService.Iface handler = message -> "echo: " + message;
         EchoService.Processor<EchoService.Iface> processor = new EchoService.Processor<>(handler);
         server = new TServer(conf, handler, processor.getProcessMapView());
